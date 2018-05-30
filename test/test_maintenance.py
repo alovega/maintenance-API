@@ -44,3 +44,7 @@ class UserTestCase(unittest.TestCase):
         request_category="maintenance")), content_type="application/json")
         result = self.client.get('/api/v1/request/0')
         self.assertIn("screen", response["title"])
+
+        if __name__ == "__main__":
+            unittest.main()
+        
