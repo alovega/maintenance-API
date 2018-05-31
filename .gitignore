@@ -1,1 +1,4 @@
 venv/
+maintenance/__pycache__
+instance/__pycache__
+test/__pycache__

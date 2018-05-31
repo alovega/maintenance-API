@@ -33,18 +33,37 @@ class UserTestCase(unittest.TestCase):
         create = self.client.post("/api/v1/request",data=json.dumps(dict(request_title="laptop",
         request_description="laptop screen Repair",
         request_category="repair")),content_type="application/json")
-        res = self.client.get('/api/v1/request/0')
-        response = json.loads(res.data.decode())
+        result = self.client.get('/api/v1/request/0')
+        response = json.loads(result.data.decode())
         self.assertIn("laptop screen Repair",response["request_description"])
 
     def test_api_can_update_request(self):
-        res = self.client.post('api/v1/request/0', data=json.dumps(dict(request_title="laptop",
+        request = self.client.post('api/v1/request/0', data=json.dumps(dict(request_title="laptop",
         request_description="laptop screen Repair",request_category="repair")),content_type="application/json")
-        res = self.client.put('api/v1/request/0', data=json.dumps(dict(request_title="Screen",
+        response = self.client.put('api/v1/request/0', data=json.dumps(dict(request_title="Screen",
         request_category="maintenance")), content_type="application/json")
         result = self.client.get('/api/v1/request/0')
         self.assertIn("screen", response["title"])
+    def test_add_empty_request_description(self):
+        create = self.client.post('/api/v1/request',data=json.dumps(dict(request_title="laptop",request_description=""
+        ,request_category="repair")),content_type="application/json")
+        result = json.loads(create.data.decode())
+        self.assertIn("request_description is required",res['message'])
+    def test_add_empty_request_title(self):
+        create = self.client.post('api/v1/requests',
+        data =json.dumps(dict(request_title="", request_description="laptop screen Repair",request_category="repair")),
+        content_type="application/json")
+        result= json.loads(create.data.decode())
+        self.assertIn("request_title is required",result['message'])
+    def test_add_empty_request_category(self):
+        create = self.client.post('api/v1/request',data=json.dumps(dict(request_title="laptop",request_description="laptop screen Repair",
+        request_category="")),content_type="application/json")
+        result=json.loads(create.data.decode())
+        self.assertIn("request_category is required",res['message'])
+    def test_add_invalid_request_id(self):
+        create = self.client.get('api/v1/request/5')
+        result = json.loads(create.data.decode())
+        self.assertIn("id not found",result['message'])
 
         if __name__ == "__main__":
             unittest.main()
-        
