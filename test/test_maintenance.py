@@ -1,6 +1,6 @@
 import unittest
+import os
 from maintenance import create_app
-from maintenance.models import User
 import json
 
 class UserTestCase(unittest.TestCase):
@@ -16,6 +16,7 @@ class UserTestCase(unittest.TestCase):
         request_description="laptop screen Repair",
         request_category="repair")),content_type="application/json")
         response = json.loads(res.data.decode())
+        self.assertEqual(response.status_code,201)
         self.assertIn("Request Created",response["message"])
              # self.assertEqual(res.status_code,201)
              # self.assertIn('laptop screen Repair',str(res.data))
@@ -25,7 +26,7 @@ class UserTestCase(unittest.TestCase):
         request_description="laptop screen Repair",
         request_category="repair")),content_type="application/json")
         res = self.client.get('/api/v1/request')
-        response = json.loads(create.data.decode())
+        response = json.loads(res.data.decode())
         created_request = response[0]
         self .assertEqual(created_request["request_title"],"laptop")
 

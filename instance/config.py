@@ -10,6 +10,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    DEBUG = True
 
 class StagingConfig(Config):
     DEBUG = True
