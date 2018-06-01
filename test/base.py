@@ -1,6 +1,6 @@
-from maintenance import models
-from maintenance.models import Users
-from maintenance.models import request_title
+from maintenance import Request
+from maintenance.Request import Users
+from maintenance.Request import request_title
 from unittest import UserTestCase
 
 import json
