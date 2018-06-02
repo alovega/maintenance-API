@@ -1,6 +1,3 @@
-import json
-
-from json import JSONEncoder
 from flask_restful import fields, marshal_with, Resource, abort, reqparse
 
 
@@ -28,6 +25,11 @@ resource_fields = {
     'request_category': fields.String
 }
 
+reqparse = reqparse.RequestParser()
+reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
+reqparse.add_argument('description', type=str, default="", location='json')
+reqparse.add_argument('category', type=str, default="", location='json')
+
 
 class RequestApi(Resource):
     @marshal_with(resource_fields)
@@ -37,11 +39,17 @@ class RequestApi(Resource):
                 return request
         abort(404)
 
+    @marshal_with(resource_fields)
+    def put(self, id):
+        for request in requests:
+            if (request.request_id == id):
+                args = reqparse.parse_args()
+                request.request_title = args['title']
+                request.request_description = args['description']
+                request.request_category = args['category']
+                return request
 
-reqparse = reqparse.RequestParser()
-reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
-reqparse.add_argument('description', type=str, default="", location='json')
-reqparse.add_argument('category', type=str, default="", location='json')
+        abort(404)
 
 
 class RequestService(Resource):
