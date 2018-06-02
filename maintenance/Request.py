@@ -1,4 +1,7 @@
-from flask_restful import fields, marshal_with, Resource, abort, reqparse
+from flask_restful import fields, marshal_with
+from flask_restful import Resource
+from flask_restful import abort
+from flask_restful import reqparse
 
 
 class RequestDao(object):
@@ -27,8 +30,13 @@ resource_fields = {
 
 reqparse = reqparse.RequestParser()
 reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
-reqparse.add_argument('description', type=str, default="", location='json')
-reqparse.add_argument('category', type=str, default="", location='json')
+reqparse.add_argument('description', type=str, required=True, help='No request description provided', location='json')
+reqparse.add_argument('category', type=str, required=True, help='Choose category', location='json')
+
+
+class HelloWorld(Resource):
+    def get(self):
+        return {'hello': 'world'}
 
 
 class RequestApi(Resource):
