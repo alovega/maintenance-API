@@ -1,58 +1,58 @@
 import json
 import unittest
-import requests
-
-class TestMaintenanceApiUsingRequests(unittest.TestCase):
-    def test_hello_world(self):
-        response = requests.get('http://localhost:5000')
-        self.assertEqual(response.json(), {'hello': 'world'})
-
+from maintenance import app
 
 class Request_tests(unittest.TestCase):
     def setUp(self):
-        pass
+        app.config["Testing"] = True
+        self.client = app.test_client()
 
-    def tearDown(self):
-        pass
 
+    def test_hello_world(self):
+        response = self.client.get('/')
+        print(response)
+        self.assertEqual(response.status_code,200)
 
     def test_create_request_works(self):
         request = {"title": "laptop", "description": "laptop screen Repair",
-                        "category": "maintenance"}
-        res =  requests.post('http://localhost:5000/api/v1/request',json= request)
-        self.assertEqual(res.status_code,201)
+                   "category": "maintenance"}
+        res = self.client.post('/api/v1/request', json=request)
+        self.assertEqual(res.status_code, 201)
 
     def test_create_request_with_no_title(self):
-        request = { "description": "laptop screen Repair",
-                        "category": "maintenance"}
-        res =  requests.post('http://localhost:5000/api/v1/request',json= request)
-        self.assertEqual(res.status_code,400)
-        self.assertEqual(json.loads(res.text)['message']['title'],"No request title provided")
+        request = {"description": "laptop screen Repair",
+                   "category": "maintenance"}
+        res = self.client.post('/api/v1/request', json=request)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json['message']['title'], "No request title provided")
+
     def test_create_request_with_no_description(self):
         request = {"title": "laptop",
                    "category": "maintenance"}
-        res = requests.post('http://localhost:5000/api/v1/request', json= request)
-        self.assertEqual(res.status_code,400)
-        self.assertEqual(json.loads(res.text)['message']['description'],"No request description provided")
+        res = self.client.post('/api/v1/request', json=request)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json['message']['description'], "No request description provided")
+
     def test_create_request_with_no_category(self):
         request = {"title": "laptop", "description": "laptop screen Repair"}
-        res = requests.post('http://localhost:5000/api/v1/request',json=request)
-        self.assertEqual(res.status_code,400)
-        self.assertEqual(json.loads(res.text)['message']["category"], "Choose category")
+        res = self.client.post('/api/v1/request', json=request)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json['message']["category"], "Choose category")
+
     def test_update_request(self):
-        request = {"title":"laptop","description":"laptop repair screen","category":"repair"}
-        res = requests.post('http://localhost:5000/api/v1/request',json=request)
-        post_id = json.loads(res.text)['request_id']
+        request = {"title": "laptop", "description": "laptop repair screen", "category": "repair"}
+        res = self.client.post('/api/v1/request', json=request)
+        post_id = res.json['request_id']
         request = {"title": "Desktop", "description": "Desktop repair screen", "category": "repair"}
-        requests.put('http://localhost:5000/api/v1/request/' + str(post_id),json=request)
-        updated = requests.get('http://localhost:5000/api/v1/request/' + str(post_id))
-        self.assertEqual(json.loads(updated.text)['request_title'], "Desktop")
-        self.assertEqual(json.loads(updated.text)['request_description'], "Desktop repair screen")
+        self.client.put('/api/v1/request/' + str(post_id), json=request)
+        updated = self.client.get('/api/v1/request/' + str(post_id))
+        self.assertEqual(updated.json['request_title'], "Desktop")
+        self.assertEqual(updated.json['request_description'], "Desktop repair screen")
 
     def test_get_all(self):
-        request =requests.get('http://localhost:5000/api/v1/request')
+        request = self.client.get('/api/v1/request')
         self.assertEqual(request.status_code, 200)
+
 
 if __name__ == "__main__":
     unittest.main()
-
