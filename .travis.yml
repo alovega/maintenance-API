@@ -11,5 +11,3 @@ script:
   - nosetests
   - nosetests --with-coverage --cover-package=app
 
-on_success: change
-on_failure: always
