@@ -2,7 +2,7 @@ import json
 import unittest
 import maintenance
 import requests
-import flask
+from flask import Flask
 
 class TestMaintenanceApiUsingRequests(unittest.TestCase):
     def test_hello_world(self):
