@@ -5,6 +5,7 @@ from flask_restful import reqparse
 
 
 class RequestDao(object):
+    """this is my request class it passes the arguments required in request"""
     def __init__(self, request_id, request_title, request_description, request_category):
         self.request_id = request_id
         self.request_title = request_title
@@ -22,6 +23,7 @@ requests.append(RequestDao(request_id=2, request_title="window", request_descrip
                            request_category="maintenance"))
 
 resource_fields = {
+"""this serves as a function for a marshal app"""
     'request_id': fields.Integer,
     'request_title': fields.String,
     'request_description': fields.String,
@@ -29,18 +31,22 @@ resource_fields = {
 }
 
 reqparse = reqparse.RequestParser()
+"""this function validates the data the user gives the function"""
 reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
 reqparse.add_argument('description', type=str, required=True, help='No request description provided', location='json')
 reqparse.add_argument('category', type=str, required=True, help='Choose category', location='json')
 
 
 class HelloWorld(Resource):
+    """this is a resource class its basically for
+    checking whether your link works"""
 
     def get(self):
         return {'hello': 'world'}
 
 
 class RequestApi(Resource):
+    """this resource class defines updates"""
     @marshal_with(resource_fields)
     def get(self, id):
         for request in requests:
