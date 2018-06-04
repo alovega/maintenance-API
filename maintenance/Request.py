@@ -35,6 +35,7 @@ reqparse.add_argument('category', type=str, required=True, help='Choose category
 
 
 class HelloWorld(Resource):
+
     def get(self):
         return {'hello': 'world'}
 
