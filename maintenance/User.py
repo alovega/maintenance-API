@@ -2,29 +2,28 @@ from flask_restful import fields, marshal_with
 from flask_restful import Resource
 from flask_restful import abort
 from flask_restful import reqparse
+from models.models import UserModels
 
+
+usermodels = UserModels()
 
 class UserDao(object):
 
-    def __init__(self, user_id, email, username, password):
-        self.user_id = user_id
+    def __init__(self,email, username, password):
         self.email = email
         self.username = username
         self.password = password
 
-
-users = []
-users.append(UserDao(user_id=1, email='alovegakevin@gmail.com', username='alovega', password='kev1234'))
-users.append(UserDao(user_id=2, email='amanda@hotmail.com', username='amandachoxxs', password='amanda4567'))
+#users = []
+usermodels.insert_user(UserDao( email='alovegakevin@gmail.com', username='alovega', password='kev1234'))
+usermodels.insert_user(UserDao( email='amanda@hotmail.com', username='amandachoxxs', password='amanda4567'))
 
 resource_fields = {
-    'user_id': fields.Integer,
     'email': fields.String,
     'username': fields.String,
     'password': fields.String,
 }
 reqparse = reqparse.RequestParser()
-reqparse.add_argument('user_id', type=int, required=True,default="",location='json')
 reqparse.add_argument('email', type=str, required=True, help='No user email provided', location='json')
 reqparse.add_argument('username', type=str, required=True, help='please choose username', location='json')
 reqparse.add_argument('password', type=str, required=True, help='include password', location='json')
@@ -42,12 +41,11 @@ class UserRegister(Resource):
     def post(self):
         args = reqparse.parse_args()
         user = UserDao(
-            user_id= args['user_id'],
             email=args['email'],
             username=args['username'],
             password=args['password'],
         )
-        users.append(user)
+        usermodels.insert_user(user)
         return user, 201
         print(user)
 
