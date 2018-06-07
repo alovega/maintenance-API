@@ -9,14 +9,14 @@ usermodels = UserModels()
 
 class UserDao(object):
 
-    def __init__(self,email, username, password):
-        self.email = email
+    def __init__(self,username,email, password):
         self.username = username
+        self.email = email
         self.password = password
 
 #users = []
-usermodels.insert_user(UserDao( email='alovegakevin@gmail.com', username='alovega', password='kev1234'))
-usermodels.insert_user(UserDao( email='amanda@hotmail.com', username='amandachoxxs', password='amanda4567'))
+usermodels.insert_user(UserDao(  username='alovega', email='alovegakevin@gmail.com', password='kev1234'))
+usermodels.insert_user(UserDao( username='amandachoxxs', email='amanda@hotmail.com', password='amanda4567'))
 
 resource_fields = {
     'email': fields.String,
@@ -24,8 +24,8 @@ resource_fields = {
     'password': fields.String,
 }
 reqparse = reqparse.RequestParser()
-reqparse.add_argument('email', type=str, required=True, help='No user email provided', location='json')
 reqparse.add_argument('username', type=str, required=True, help='please choose username', location='json')
+reqparse.add_argument('email', type=str, required=True, help='No user email provided', location='json')
 reqparse.add_argument('password', type=str, required=True, help='include password', location='json')
 
 reqparse_copy = reqparse.copy()
@@ -41,8 +41,8 @@ class UserRegister(Resource):
     def post(self):
         args = reqparse.parse_args()
         user = UserDao(
-            email=args['email'],
             username=args['username'],
+            email=args['email'],
             password=args['password'],
         )
         usermodels.insert_user(user)
@@ -58,7 +58,7 @@ class UserLogin(Resource):
 
     @marshal_with(resource_fields)
     def post(self):
-        for user in users:
+        for user in usermodels:
             args = reqparse_copy.parse_args()
             if args['username'] == user.username and args['password'] == user.password:
                 return user
@@ -66,11 +66,11 @@ class UserLogin(Resource):
 
     @marshal_with(resource_fields)
     def put(self, id):
-        for user in users:
-            if (user.user_id == id):
+        for user in usermodels:
+            if user.user_id == id:
                 args = reqparse.parse_args()
-                user.email = args['email']
                 user.username = args['username']
+                user.email = args['email']
                 user.password = args['password']
-                users.append(user)
+                usermodels.insert_user(user)
                 return user
