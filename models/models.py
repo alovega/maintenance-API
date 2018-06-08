@@ -23,11 +23,11 @@ class MaintenanceDb (object):
         self.connection.commit ()
         cur.close ()
 
-    def update_user(self, username,password,email):
+    def update_user(self, username,password,id):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
         sql = """UPDATE users set username = %s , password = %s  
-                    where email = %s"""
-        cur.execute(sql,(username,password,email))
+                    where id = %s"""
+        cur.execute(sql,(username,password,id))
         updated_rows = cur.rowcount
         print(json.dumps (updated_rows,indent=2))
         self.connection.commit ()
@@ -139,5 +139,5 @@ class MaintenanceDb (object):
 
 
 dao = MaintenanceDb ()
-dao.update_user('kevin','12345','alovegakevin@gmail.com')
+dao.update_user('kevin','1236',1)
 

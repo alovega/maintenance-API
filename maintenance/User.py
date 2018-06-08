@@ -35,7 +35,6 @@ reqparse_copy.add_argument('password', type=str, required=True, help='Invalid pa
 
 
 class UserRegister(Resource):
-    @marshal_with(user_fields)
     def post(self):
         args = reqparse.parse_args()
         user = UserDao(
@@ -61,21 +60,14 @@ class UserLogin(Resource):
         args = reqparse_copy.parse_args ()
         result = maintenanceDao.get_user_by_password_and_name(args['username'],args['password'])
         if result:
-            return  result
+            return result
         abort(404)
+
+
 class UserUpdate(Resource):
-    @marshal_with(user_fields)
-    def put(self, email):
+    def put(self, id):
         args = reqparse_copy.parse_args()
-        result = maintenanceDao.update_user(args['username'],args['password'],args['email'])
+        result = maintenanceDao.update_user(args['username'],args['password'])
         if result:
             return result
         abort(404)
-        # for user in usermodels:
-        #     if user.user_id == id:
-        #         args = reqparse.parse_args()
-        #         user.username = args['username']
-        #         user.email = args['email']
-        #         user.password = args['password']
-        #         usermodels.insert_user(user)
-        #         return user
