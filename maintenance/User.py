@@ -2,10 +2,10 @@ from flask_restful import fields, marshal_with
 from flask_restful import Resource
 from flask_restful import abort
 from flask_restful import reqparse
-from models.models import UserModels
+from models.models import MaintenanceDb
 
 
-usermodels = UserModels()
+maintenanceDao = MaintenanceDb()
 
 class UserDao(object):
 
@@ -15,8 +15,8 @@ class UserDao(object):
         self.password = password
 
 #users = []
-usermodels.insert_user(UserDao(  username='alovega', email='alovegakevin@gmail.com', password='kev1234'))
-usermodels.insert_user(UserDao( username='amandachoxxs', email='amanda@hotmail.com', password='amanda4567'))
+#usermodels.insert_user(UserDao(  username='alovega', email='alovegakevin@gmail.com', password='kev1234'))
+#usermodels.insert_user(UserDao( username='amandachoxxs', email='amanda@hotmail.com', password='amanda4567'))
 
 resource_fields = {
     'email': fields.String,
@@ -45,12 +45,14 @@ class UserRegister(Resource):
             email=args['email'],
             password=args['password'],
         )
-        usermodels.insert_user(user)
+
+        maintenanceDao.insert_user(user)
         return user, 201
         print(user)
 
     @marshal_with(resource_fields)
     def get(self):
+        users = maintenanceDao.getAll()
         return users
 
 
@@ -58,19 +60,19 @@ class UserLogin(Resource):
 
     @marshal_with(resource_fields)
     def post(self):
-        for user in usermodels:
-            args = reqparse_copy.parse_args()
-            if args['username'] == user.username and args['password'] == user.password:
-                return user
+        args = reqparse_copy.parse_args ()
+        result  = maintenanceDao.get_user_by_email_and_name( args['password'],args['username'])
+        if result:
+            return  result
         abort(404)
 
-    @marshal_with(resource_fields)
-    def put(self, id):
-        for user in usermodels:
-            if user.user_id == id:
-                args = reqparse.parse_args()
-                user.username = args['username']
-                user.email = args['email']
-                user.password = args['password']
-                usermodels.insert_user(user)
-                return user
+    # @marshal_with(resource_fields)
+    # def put(self, id):
+    #     for user in usermodels:
+    #         if user.user_id == id:
+    #             args = reqparse.parse_args()
+    #             user.username = args['username']
+    #             user.email = args['email']
+    #             user.password = args['password']
+    #             usermodels.insert_user(user)
+    #             return user

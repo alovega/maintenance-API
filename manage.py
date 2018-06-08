@@ -13,8 +13,9 @@ try:
             DEFAULT FALSE NOT NULL)""",
             """
             CREATE TABLE IF NOT EXISTS requests(id SERIAL PRIMARY KEY, title VARCHAR(50) NOT NULL,
-            description  VARCHAR(100) NOT NULL, category VARCHAR(40) NOT NULL,author INT NOT NULL,
-            FOREIGN KEY (author) REFERENCES users(id) ON DELETE CASCADE) 
+            description  VARCHAR(100) NOT NULL, category VARCHAR(40) NOT NULL,approve VARCHAR(40) 
+            DEFAULT FALSE, disapprove VARCHAR(40) DEFAULT FALSE,RESOLVE VARCHAR(40) DEFAULT FALSE,
+            author INT NOT NULL, FOREIGN KEY (author) REFERENCES users(id) ON DELETE CASCADE) 
             """)
         cur = conn.cursor()
         for command in commands:
