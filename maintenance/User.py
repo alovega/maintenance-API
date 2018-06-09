@@ -97,7 +97,7 @@ class UserLogin(Resource):
         else:
             return{
                 'message':'wrong credentials provided'
-            },404
+            }, 404
 
 
 class UserLogoutAccess(Resource):
@@ -110,7 +110,7 @@ class UserLogoutAccess(Resource):
             revoked_token.add_token(jti)
             return {'message': 'Access token has been revoked'},200
         except:
-           return {'message':'something went wrong'},500
+            return {'message':'something went wrong'},500
 
 
 class UserLogoutRefresh(Resource):

@@ -1,5 +1,4 @@
 import json
-
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -24,36 +23,26 @@ class MaintenanceDb:
         self.connection.commit()
         cur.close()
 
-    def update_user(self, username,password,id):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        sql = """UPDATE users set username = %s , password = %s  
-                    where id = %s"""
-        cur.execute(sql,(username,password,id))
-        updated_rows = cur.rowcount
-        print(json.dumps(updated_rows,indent=2))
-        self.connection.commit()
-        cur.close()
-
     def delete_user(self, email):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("DELETE from users where email = %(email)s ",{'email':email})
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("DELETE from users where email = %(email)s ", {'email': email})
         rows_deleted = cur.rowcount
         self.connection.commit()
         print(json.dumps(rows_deleted,indent=2))
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
 
-        cur.execute ("SELECT id,username,email,password from users ")
-        rows = cur.fetchall ()
-        print (json.dumps (rows, indent=2))
+        cur.execute("SELECT id,username,email,password from users ")
+        rows = cur.fetchall()
+        print(json.dumps(rows, indent=2))
         return rows
         print('rows')
 
         cur.close()
 
     def get_user_by_email(self, email):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
-        rows = cur.fetchall ()
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
+        rows = cur.fetchall()
         print(json.dumps(rows,indent=2))
         return rows
 
@@ -84,72 +73,89 @@ class MaintenanceDb:
     #requests data methods
 
     def insert_request(self, RequestDao):
-        sql = """INSERT INTO requests(title,description,category) VALUES (%s,%s,%s)"""
+        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s)"""
         # get connection
         cur = self.connection.cursor()
         # insert into database
-        cur.execute (sql, (RequestDao.title, RequestDao.description, RequestDao.category))
+        cur.execute(sql, (RequestDao.user_id,RequestDao.title, RequestDao.description, RequestDao.category))
         self.connection.commit()
+
         cur.close()
 
-    def update_request(self, title,description,author):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        sql = """UPDATE requests set title = %s , description = %s  
-                    where author = %s"""
-        cur.execute(sql,(title,description,author))
+    def update_request(self, title, description, request_id):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        sql = """UPDATE request set title = %s , description = %s  
+                       where request_id = %s"""
+        cur.execute(sql, (title, description, request_id))
         updated_rows = cur.rowcount
-        print(json.dumps(updated_rows,indent=2))
+        print(json.dumps(updated_rows, indent=2))
         self.connection.commit()
         cur.close()
 
-    def delete_request(self, author):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("DELETE from users where author = %(author)s ",{'author':author})
+    def delete_request(self, request_id):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("DELETE from requests where request_id = %(request_id)s ",{'request_id': request_id})
         rows_deleted = cur.rowcount
         self.connection.commit()
         print(json.dumps(rows_deleted,indent=2))
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
         cur.close()
 
-        cur.execute ("SELECT id,username,email,password from users ")
-        rows = cur.fetchall ()
-        print (json.dumps (rows, indent=2))
+        cur.execute("SELECT id,username,email,password from users ")
+        rows = cur.fetchall()
+        print(json.dumps(rows, indent=2))
         return rows
         print('rows')
         cur.close()
 
-    def get_request_by_id(self, email):
+    def get_request_by_user_id(self, user_id):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
-        rows = cur.fetchall ()
-        print(json.dumps(rows,indent=2))
+        cur.execute("SELECT * from requests where user_id = %(user_id)s ", {'user_id': user_id})
+        rows = cur.fetchall()
+        return rows
+        cur.close ()
+
+    def get_request_by_request_id(self, request_id):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * from users where request_id = %(request_id)s ", {'request_id': request_id})
+        rows = cur.fetchall()
         return rows
         cur.close()
 
     def get_request_by_author(self, username,password):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("""SELECT id,username,email,password from users 
+        cur.execute("""SELECT id,username,email,password from users 
                       where username = %(username)s and password = %(password)s""",
                      {'username': username,'password': password})
-        rows = cur.fetchall ()
+        rows = cur.fetchall()
         print(json.dumps(rows,indent=2))
         return rows
         cur.close()
 
     def getall_requests(self):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("SELECT *  from requests")
-        rows = cur.fetchall ()
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT *  from requests")
+        rows = cur.fetchall()
         return rows
 
-        # revoked tokens storage
+    def check_user_exist(self, description):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * from users where description = %(description)s ", {'email': email})
+        rows = cur.fetchone()
+        if rows:
+            return True
+        else:
+            return False
+        cur.close()
 
-    def add_token(self,jti):
+# revoked tokens storage
+
+    def add_token(self, jti):
         sql = "INSERT INTO revoked_tokens(jti) VALUES ('{0}')".format(jti)
         # get connection
-        cur = self.connection.cursor ()
+        cur = self.connection.cursor()
         # insert into database
-        cur.execute (sql)
+        cur.execute(sql)
         self.connection.commit()
         cur.close()
 

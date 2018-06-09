@@ -4,6 +4,7 @@ import psycopg2
 try:
     conn = psycopg2.connect(host='localhost',dbname='maintenanceAPI',user='postgres',password='LUG4Z1V4', port=5433)
     print('Established')
+
     def create_table():
 
         commands = (
@@ -15,7 +16,7 @@ try:
             CREATE TABLE IF NOT EXISTS requests(id SERIAL PRIMARY KEY, title VARCHAR(50) NOT NULL,
             description  VARCHAR(100) NOT NULL, category VARCHAR(40) NOT NULL,approve VARCHAR(40) 
             DEFAULT FALSE, disapprove VARCHAR(40) DEFAULT FALSE,RESOLVE VARCHAR(40) DEFAULT FALSE, 
-            user_id INTEGER  REFERENCES users(id)) 
+            user_id INTEGER  NOT NULL,FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE)
             """,
             """CREATE TABLE IF NOT EXISTS 
              revoked_tokens(id SERIAL PRIMARY KEY, jti VARCHAR(256) )""")
@@ -27,7 +28,8 @@ try:
         conn.close()
 
 except:
-    print ("I am unable to connect to the database")
+
+    print("I am unable to connect to the database")
 
 
 if __name__ == '__main__':
