@@ -4,14 +4,15 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
-class MaintenanceDb (object):
+class MaintenanceDb:
     def __init__(self):
         try:
-            self.connection = psycopg2.connect (host='localhost', dbname='maintenanceAPI'
-                                                , user='postgres', password='LUG4Z1V4', port=5433)
-            print ('Established')
+            self.connection = psycopg2.connect (host='localhost', dbname='maintenanceAPI', user='postgres', password='LUG4Z1V4', port=5433)
         except:
-            print ("Unable to connect to the database")
+            print("Unable to connect to the database")
+
+    def getConnection(self):
+        return self.connection
 
     # User
     def insert_user(self, UserDao):
@@ -19,7 +20,7 @@ class MaintenanceDb (object):
         # get connection
         cur = self.connection.cursor ()
         # insert into database
-        cur.execute (sql, (UserDao.username, UserDao.email, UserDao.password))
+        cur.execute (sql, (UserDao.username, UserDao.email, UserDao.password,))
         self.connection.commit ()
         cur.close ()
 
@@ -56,20 +57,21 @@ class MaintenanceDb (object):
         print(json.dumps(rows,indent=2))
         return rows
 
-    def get_user_by_password_and_name(self, username,password):
+    def get_user_by_username(self, username):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("""SELECT id,username,email,password from users 
-                      where username = %(username)s and password = %(password)s""",
-                     {'username': username,'password': password})
-        rows = cur.fetchall ()
+        cur.execute("""SELECT id,username,email,password from users 
+                      where username = %(username)s """,
+                     {'username': username})
+        rows = cur.fetchall()
         print(json.dumps(rows,indent=2))
         return rows
 
-    def getAll(self):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
+    def get_all(self):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
         cur.execute ("SELECT id,username,email,password  from users")
         rows = cur.fetchall ()
         return rows
+
     def check_user_exist(self,email):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
         cur.execute ("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
@@ -79,6 +81,7 @@ class MaintenanceDb (object):
         else:
             return False
 #requests data methods
+
     def insert_request(self, RequestDao):
         sql = """INSERT INTO requests(title,description,category) VALUES (%s,%s,%s)"""
         # get connection
@@ -138,6 +141,6 @@ class MaintenanceDb (object):
 
 
 
-dao = MaintenanceDb ()
-dao.update_user('kevin','1236',1)
+# dao = MaintenanceDb ()
+# dao.delete_user('lomolo@yahoo.com')
 

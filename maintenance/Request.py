@@ -62,8 +62,9 @@ class RequestApi(Resource):
 
 
 class RequestService(Resource):
-    @marshal_with(resource_fields)
+
     def get(self):
+        requests = maintenanceDao.getAll_requests()
         return requests
 
     @marshal_with(resource_fields)
@@ -75,5 +76,5 @@ class RequestService(Resource):
             request_description=args['description'],
             request_category=args['category']
         )
-        requests.append(request)
+        maintenanceDao.insert(request)
         return request, 201

@@ -11,6 +11,7 @@ class testUserModel(unittest.TestCase):
     def test_adduser_function_adds_userto_list_users(self):
         result = self.myuser.addUser()
         self.assertEqual(result,{"kev@gmail":["alovega","1234"]},{"kev@gmail":["alovega","1234"]})
+    def test_user_registers
 
 
 

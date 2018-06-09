@@ -1,19 +1,30 @@
-from flask_restful import fields, marshal_with
+from flask_restful import fields
 from flask_restful import Resource
 from flask_restful import abort
 from flask_restful import reqparse
+from flask_jwt_extended import (create_access_token,create_refresh_token,
+                                jwt_required,jwt_refresh_token_required,
+                                get_jwt_identity, get_raw_jwt)
+from passlib.hash import pbkdf2_sha256 as sha256
 from models.models import MaintenanceDb
-
+from models.RevokedToken import RevokedTokenModel
 
 maintenanceDao = MaintenanceDb()
 
 
 class UserDao(object):
-
     def __init__(self,username,email, password):
         self.username = username
         self.email = email
         self.password = password
+
+    @staticmethod
+    def generate_hash(password):
+        return sha256.hash (password)
+
+    @staticmethod
+    def verify_hash(password,hash):
+        return sha256.verify(password,hash)
 
 
 user_fields = {
@@ -40,28 +51,75 @@ class UserRegister(Resource):
         user = UserDao(
             email=args['email'],
             username=args['username'],
-            password=args['password'],
-        )
-        if  maintenanceDao.check_user_exist(user.email):
-            return {"message": "Email already used"}, 202
-        else:
-            maintenanceDao.insert_user(user)
-            return user, 201
+            password=args['password']
 
-    @marshal_with(user_fields)
+        )
+        if maintenanceDao.check_user_exist(user.email):
+            return {"message": "Email already used"}, 202
+
+        user.password = user.generate_hash(user.password)
+
+        try:
+            maintenanceDao.insert_user (user)
+            access_token = create_access_token (identity=user.username)
+            refresh_token = create_refresh_token (identity=user.username)
+            return {
+                'message': 'User {} was created'.format (user.username),
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            },201
+        except:
+            return {'message': 'Something went wrong'}, 500
+
+        return{
+                'message': 'User {} was created'.format(user.username)
+            }, 201
+
     def get(self):
-        users = maintenanceDao.getAll()
+        users = maintenanceDao.get_all()
         return users
 
 
 class UserLogin(Resource):
-    @marshal_with(user_fields)
     def post(self):
-        args = reqparse_copy.parse_args ()
-        result = maintenanceDao.get_user_by_password_and_name(args['username'],args['password'])
-        if result:
-            return result
-        abort(404)
+        args = reqparse_copy.parse_args()
+        user = maintenanceDao.get_user_by_username(args['username'])
+        if not user:
+             return{'message': 'User{} doesn\'t exist'.format(user[0]['username'])}
+        if UserDao.verify_hash(args.password, user[0]['password']):
+            access_token = create_access_token (identity=user[0]['username'])
+            refresh_token = create_refresh_token (identity=user[0]['username'])
+            return {
+                'message': 'Logged in as {}'.format (user[0]['username']),
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }
+        else:
+            return{
+                'message':'wrong credentials provided'
+            },404
+
+
+class UserLogoutAccess(Resource):
+    @jwt_required
+    def post(self):
+        jti = get_raw_jwt()['jti']
+        revoked_token = RevokedTokenModel(jti = jti)
+        if revoked_token.add_token():
+            return {'message': 'Access token has been revoked'}
+        else:
+            return {'message':'something went wrong'},500
+
+
+class UserLogoutRefresh(Resource):
+    @jwt_refresh_token_required
+    def post(self):
+        jti = get_raw_jwt()['jti']
+        revoked_token = RevokedTokenModel(jti = jti)
+        if revoked_token.add_token():
+            return {'message': 'Refresh token has been revoked'}
+        else:
+            return {'message': 'Something went wrong'},500
 
 
 class UserUpdate(Resource):
