@@ -18,11 +18,11 @@ class MaintenanceDb:
     def insert_user(self, UserDao):
         sql = """INSERT INTO users(username,email,password) VALUES (%s,%s,%s)"""
         # get connection
-        cur = self.connection.cursor ()
+        cur = self.connection.cursor()
         # insert into database
-        cur.execute (sql, (UserDao.username, UserDao.email, UserDao.password,))
-        self.connection.commit ()
-        cur.close ()
+        cur.execute(sql, (UserDao.username, UserDao.email, UserDao.password,))
+        self.connection.commit()
+        cur.close()
 
     def update_user(self, username,password,id):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
@@ -30,9 +30,9 @@ class MaintenanceDb:
                     where id = %s"""
         cur.execute(sql,(username,password,id))
         updated_rows = cur.rowcount
-        print(json.dumps (updated_rows,indent=2))
-        self.connection.commit ()
-        cur.close ()
+        print(json.dumps(updated_rows,indent=2))
+        self.connection.commit()
+        cur.close()
 
     def delete_user(self, email):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
@@ -68,28 +68,29 @@ class MaintenanceDb:
 
     def get_all(self):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
-        cur.execute ("SELECT id,username,email,password  from users")
+        cur.execute("SELECT id,username,email,password  from users")
         rows = cur.fetchall ()
         return rows
 
-    def check_user_exist(self,email):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute ("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
+    def check_user_exist(self, email):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
         rows = cur.fetchone()
         if rows:
             return True
         else:
             return False
-#requests data methods
+        cur.close()
+    #requests data methods
 
     def insert_request(self, RequestDao):
         sql = """INSERT INTO requests(title,description,category) VALUES (%s,%s,%s)"""
         # get connection
-        cur = self.connection.cursor ()
+        cur = self.connection.cursor()
         # insert into database
         cur.execute (sql, (RequestDao.title, RequestDao.description, RequestDao.category))
-        self.connection.commit ()
-        cur.close ()
+        self.connection.commit()
+        cur.close()
 
     def update_request(self, title,description,author):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
@@ -97,9 +98,9 @@ class MaintenanceDb:
                     where author = %s"""
         cur.execute(sql,(title,description,author))
         updated_rows = cur.rowcount
-        print(json.dumps (updated_rows,indent=2))
-        self.connection.commit ()
-        cur.close ()
+        print(json.dumps(updated_rows,indent=2))
+        self.connection.commit()
+        cur.close()
 
     def delete_request(self, author):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
@@ -108,13 +109,13 @@ class MaintenanceDb:
         self.connection.commit()
         print(json.dumps(rows_deleted,indent=2))
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
+        cur.close()
 
         cur.execute ("SELECT id,username,email,password from users ")
         rows = cur.fetchall ()
         print (json.dumps (rows, indent=2))
         return rows
         print('rows')
-
         cur.close()
 
     def get_request_by_id(self, email):
@@ -123,6 +124,7 @@ class MaintenanceDb:
         rows = cur.fetchall ()
         print(json.dumps(rows,indent=2))
         return rows
+        cur.close()
 
     def get_request_by_author(self, username,password):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
@@ -132,15 +134,24 @@ class MaintenanceDb:
         rows = cur.fetchall ()
         print(json.dumps(rows,indent=2))
         return rows
+        cur.close()
 
-    def getAll_requests(self):
+    def getall_requests(self):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
         cur.execute ("SELECT *  from requests")
         rows = cur.fetchall ()
         return rows
 
+        # revoked tokens storage
+
+    def add_token(self,jti):
+        sql = "INSERT INTO revoked_tokens(jti) VALUES ('{0}')".format(jti)
+        # get connection
+        cur = self.connection.cursor ()
+        # insert into database
+        cur.execute (sql)
+        self.connection.commit()
+        cur.close()
 
 
-# dao = MaintenanceDb ()
-# dao.delete_user('lomolo@yahoo.com')
 

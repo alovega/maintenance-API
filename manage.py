@@ -18,7 +18,7 @@ try:
             user_id INTEGER  REFERENCES users(id)) 
             """,
             """CREATE TABLE IF NOT EXISTS 
-             revoked_tokens(id SERIAL PRIMARY KEY, jti VARCHAR(120) )""")
+             revoked_tokens(id SERIAL PRIMARY KEY, jti VARCHAR(256) )""")
         cur = conn.cursor()
         for command in commands:
             cur.execute(command)

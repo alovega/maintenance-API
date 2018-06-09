@@ -72,7 +72,7 @@ class UserRegister(Resource):
             return {'message': 'Something went wrong'}, 500
 
         return{
-                'message': 'User {} was created'.format(user.username)
+                'message': 'User {0} was created'.format(user.username)
             }, 201
 
     def get(self):
@@ -104,28 +104,25 @@ class UserLogoutAccess(Resource):
     @jwt_required
     def post(self):
         jti = get_raw_jwt()['jti']
-        revoked_token = RevokedTokenModel(jti = jti)
-        if revoked_token.add_token():
-            return {'message': 'Access token has been revoked'}
-        else:
-            return {'message':'something went wrong'},500
+        try:
+
+            revoked_token = RevokedTokenModel()
+            revoked_token.add_token(jti)
+            return {'message': 'Access token has been revoked'},200
+        except:
+           return {'message':'something went wrong'},500
 
 
 class UserLogoutRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         jti = get_raw_jwt()['jti']
-        revoked_token = RevokedTokenModel(jti = jti)
-        if revoked_token.add_token():
+        try:
+            revoked_token = RevokedTokenModel()
+            revoked_token.add_token(jti)
             return {'message': 'Refresh token has been revoked'}
-        else:
+        except:
             return {'message': 'Something went wrong'},500
 
 
-class UserUpdate(Resource):
-    def put(self, id):
-        args = reqparse_copy.parse_args()
-        result = maintenanceDao.update_user(args['username'],args['password'])
-        if result:
-            return result
-        abort(404)
+

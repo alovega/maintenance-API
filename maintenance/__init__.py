@@ -3,7 +3,6 @@ from flask_restful import Api
 from maintenance.Request import HelloWorld, RequestApi, RequestService
 from maintenance.User import UserRegister
 from maintenance.User import UserLogin
-from maintenance.User import UserUpdate
 from flask_jwt_extended import JWTManager
 from models import RevokedToken
 from maintenance.User import UserLogoutAccess,UserLogoutRefresh
@@ -14,7 +13,6 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access','refresh']
 jwt = JWTManager(app)
 api = Api(app)
-
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
@@ -27,9 +25,7 @@ api.add_resource(HelloWorld,'/')
 api.add_resource(RequestApi, '/api/v1/request/<int:id>', endpoint='requestapi')
 api.add_resource(RequestService, '/api/v1/request', endpoint='requestservice')
 api.add_resource(UserRegister, '/auth/signup', endpoint='userregister')
-api.add_resource(UserUpdate, '/api/v1/users/<int:id>', endpoint='userupdate')
 api.add_resource(UserLogin, '/auth/login', endpoint='userlogin')
 api.add_resource(UserLogoutRefresh,'/auth/logout/refresh',endpoint='userlogoutrefresh')
 api.add_resource(UserLogoutAccess,'/auth/logout', endpoint='userlogout access')
 api.add_resource(TokenRefresh,'/token/refresh')
-
