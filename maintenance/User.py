@@ -47,9 +47,14 @@ reqparse_copy.add_argument('password', type=str, required=True, help='Invalid pa
 class UserRegister(Resource):
     def post(self):
         args = reqparse.parse_args()
+        username = args['username']
+
+        if not username:
+          return {"message":"username not valid"},404
+
         user = UserDao(
             email=args['email'],
-            username=args['username'],
+            username=username,
             password=args['password']
 
         )
