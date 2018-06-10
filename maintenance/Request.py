@@ -1,80 +1,132 @@
+import json
+
+from flask_jwt_extended import jwt_required
 from flask_restful import fields, marshal_with
 from flask_restful import Resource
 from flask_restful import abort
 from flask_restful import reqparse
 from models.models import MaintenanceDb
 
+
 maintenanceDao = MaintenanceDb()
 
+
 class RequestDao(object):
-    def __init__(self,author, title, description,category):
-        self.author = author
+    def __init__(self,user_id, title, description,category):
+        self.user_id = user_id
         self.title = title
         self.description = description
         self.category = category
 
     def __str__(self):
-        return self.request_title
+        return self.title
 
-
-requests = []
-maintenanceDao.insert_request(RequestDao(author = "kevin",title="laptop",description="laptop screen Repair",category="maintenance"))
-requests.append(RequestDao(author = "alovega",title="window", description="window broken",category="maintenance"))
 
 resource_fields = {
-    'request_id': fields.Integer,
-    'request_title': fields.String,
-    'request_description': fields.String,
-    'request_category': fields.String
+    'user_id':fields.Integer,
+    'title': fields.String,
+    'description': fields.String,
+    'category': fields.String
 }
 
 reqparse = reqparse.RequestParser()
+reqparse.add_argument('user_id', type=int, required=True, help='please provide user_id', location='json')
 reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
 reqparse.add_argument('description', type=str, required=True, help='No request description provided', location='json')
 reqparse.add_argument('category', type=str, required=True, help='Choose category', location='json')
+reqparse_copy = reqparse.copy()
+reqparse_copy.remove_argument('user_id')
+reqparse_copy.add_argument('title', type=str, required=False, location='json')
+reqparse_copy.add_argument('description', type=str, required=False, location='json')
+reqparse_copy.add_argument('category', type=str, required=False, help='choose category', location='json')
 
 
 class HelloWorld(Resource):
-
     def get(self):
         return {'hello': 'world'}
 
 
-class RequestApi(Resource):
+class RequestUser(Resource):
     @marshal_with(resource_fields)
+    @jwt_required
+    def get(self, user_id):
+        result = maintenanceDao.get_request_by_user_id(user_id)
+        if result:
+            return result
+        else:
+            return {"message": "not a registered user"}, 404
+
+
+class RequestUserId(Resource):
+    @marshal_with (resource_fields)
+    @jwt_required
     def get(self, id):
-        for request in requests:
-            if (request.request_id == id):
-                return request
-        abort(404)
+        result = maintenanceDao.get_request_by_request_id(id)
+        if result:
+            return result
+        else:
+            return {"message": "request id not available"}, 404
 
-    @marshal_with(resource_fields)
+
+    @jwt_required
     def put(self, id):
-        for request in requests:
-            if (request.request_id == id):
-                args = reqparse.parse_args()
-                request.request_title = args['title']
-                request.request_description = args['description']
-                request.request_category = args['category']
-                return request
+        args = reqparse_copy.parse_args()
+        result = maintenanceDao.update_request(args['title'],args['description'],args['category'],id)
+        if result == -1:
+            return {"message": "unable to edit this request"}, 201
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            abort (404)
 
-        abort(404)
 
-
-class RequestService(Resource):
-
-    def get(self):
-        requests = maintenanceDao.getAll_requests()
-        return requests
-
-    @marshal_with(resource_fields)
+class RequestPosting(Resource):
+    @jwt_required
+    @marshal_with (resource_fields)
     def post(self):
         args = reqparse.parse_args()
         request = RequestDao(
-            request_id=requests[-1].request_id + 1,
-            request_title=args['title'],
-            request_description=args['description'],
-            request_category=args['category']
+            user_id=args['user_id'],
+            title=args['title'],
+            description=args['description'],
+            category=args['category']
         )
-        maintenanceDao.insert(request)
+        maintenanceDao.insert_request(request)
         return request, 201
+
+
+class RequestAdmin(Resource):
+    @jwt_required
+    def get(self):
+        result = maintenanceDao.getall_requests()
+        if result:
+            return result
+        else:
+            abort(404)
+
+
+class RequestAdminId(Resource):
+    def put(self,id):
+        result = maintenanceDao.admin_resolve_request(id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            return {'message':'request id given not existing'}
+
+
+class RequestApprove(Resource):
+    def put(self,id):
+        result = maintenanceDao.admin_approve_request(id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            return {'message':'request id given not existing'}
+
+
+class RequestDisapprove(Resource):
+    def put(self,id):
+        result = maintenanceDao.admin_disapprove_request(id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            return {'message':'request id given not existing'}

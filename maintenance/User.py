@@ -1,6 +1,5 @@
 from flask_restful import fields
 from flask_restful import Resource
-from flask_restful import abort
 from flask_restful import reqparse
 from flask_jwt_extended import (create_access_token,create_refresh_token,
                                 jwt_required,jwt_refresh_token_required,
@@ -48,9 +47,14 @@ reqparse_copy.add_argument('password', type=str, required=True, help='Invalid pa
 class UserRegister(Resource):
     def post(self):
         args = reqparse.parse_args()
+        username = args['username']
+
+        if not username:
+          return {"message":"username not valid"},404
+
         user = UserDao(
             email=args['email'],
-            username=args['username'],
+            username=username,
             password=args['password']
 
         )
@@ -85,7 +89,7 @@ class UserLogin(Resource):
         args = reqparse_copy.parse_args()
         user = maintenanceDao.get_user_by_username(args['username'])
         if not user:
-             return{'message': 'User{} doesn\'t exist'.format(user[0]['username'])}
+             return{'message': 'User{} doesn\'t exist'.format(args['username'])},404
         if UserDao.verify_hash(args.password, user[0]['password']):
             access_token = create_access_token (identity=user[0]['username'])
             refresh_token = create_refresh_token (identity=user[0]['username'])
@@ -93,11 +97,14 @@ class UserLogin(Resource):
                 'message': 'Logged in as {}'.format (user[0]['username']),
                 'access_token': access_token,
                 'refresh_token': refresh_token
-            }
+            },202
         else:
             return{
                 'message':'wrong credentials provided'
-            },404
+            }, 404
+
+    def update_to_admin(self):
+        pass
 
 
 class UserLogoutAccess(Resource):
@@ -110,7 +117,7 @@ class UserLogoutAccess(Resource):
             revoked_token.add_token(jti)
             return {'message': 'Access token has been revoked'},200
         except:
-           return {'message':'something went wrong'},500
+            return {'message':'something went wrong'},500
 
 
 class UserLogoutRefresh(Resource):
