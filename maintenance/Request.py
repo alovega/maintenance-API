@@ -1,3 +1,5 @@
+import json
+
 from flask_jwt_extended import jwt_required
 from flask_restful import fields, marshal_with
 from flask_restful import Resource
@@ -32,10 +34,14 @@ reqparse.add_argument('user_id', type=int, required=True, help='please provide u
 reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
 reqparse.add_argument('description', type=str, required=True, help='No request description provided', location='json')
 reqparse.add_argument('category', type=str, required=True, help='Choose category', location='json')
+reqparse_copy = reqparse.copy()
+reqparse_copy.remove_argument('user_id')
+reqparse_copy.add_argument('title', type=str, required=False, location='json')
+reqparse_copy.add_argument('description', type=str, required=False, location='json')
+reqparse_copy.add_argument('category', type=str, required=False, help='choose category', location='json')
 
 
 class HelloWorld(Resource):
-
     def get(self):
         return {'hello': 'world'}
 
@@ -54,20 +60,25 @@ class RequestUser(Resource):
 class RequestUserId(Resource):
     @marshal_with (resource_fields)
     @jwt_required
-    def get(self, request_id):
-        result = maintenanceDao.get_request_by_request_id(request_id)
+    def get(self, id):
+        result = maintenanceDao.get_request_by_request_id(id)
         if result:
             return result
         else:
             return {"message": "request id not available"}, 404
 
-    @marshal_with(resource_fields)
+
     @jwt_required
     def put(self, id):
-        args = reqparse.parse_args()
+        args = reqparse_copy.parse_args()
+        result = maintenanceDao.update_request(args['title'],args['description'],args['category'],id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            abort (404)
 
 
-class RequestService(Resource):
+class RequestPosting(Resource):
     @jwt_required
     @marshal_with (resource_fields)
     def post(self):
@@ -79,6 +90,41 @@ class RequestService(Resource):
             category=args['category']
         )
         maintenanceDao.insert_request(request)
-        print(request)
         return request, 201
 
+
+class RequestAdmin(Resource):
+    @jwt_required
+    def get(self):
+        result = maintenanceDao.getall_requests()
+        if result:
+            return result
+        else:
+            abort(404)
+
+
+class RequestAdminId(Resource):
+    def put(self,id):
+        result = maintenanceDao.admin_resolve_request(id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            return {'message':'request id given not existing'}
+
+
+class RequestApprove(Resource):
+    def put(self,id):
+        result = maintenanceDao.admin_approve_request(id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            return {'message':'request id given not existing'}
+
+
+class RequestDisapprove(Resource):
+    def put(self,id):
+        result = maintenanceDao.admin_disapprove_request(id)
+        if result:
+            return maintenanceDao.get_request_by_request_id(id)
+        else:
+            return {'message':'request id given not existing'}

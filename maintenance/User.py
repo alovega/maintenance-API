@@ -1,6 +1,5 @@
 from flask_restful import fields
 from flask_restful import Resource
-from flask_restful import abort
 from flask_restful import reqparse
 from flask_jwt_extended import (create_access_token,create_refresh_token,
                                 jwt_required,jwt_refresh_token_required,
@@ -85,7 +84,7 @@ class UserLogin(Resource):
         args = reqparse_copy.parse_args()
         user = maintenanceDao.get_user_by_username(args['username'])
         if not user:
-             return{'message': 'User{} doesn\'t exist'.format(user[0]['username'])}
+             return{'message': 'User{} doesn\'t exist'.format(args['username'])}
         if UserDao.verify_hash(args.password, user[0]['password']):
             access_token = create_access_token (identity=user[0]['username'])
             refresh_token = create_refresh_token (identity=user[0]['username'])
@@ -98,6 +97,9 @@ class UserLogin(Resource):
             return{
                 'message':'wrong credentials provided'
             }, 404
+
+    def update_to_admin(self):
+        pass
 
 
 class UserLogoutAccess(Resource):

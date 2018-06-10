@@ -39,12 +39,6 @@ class MaintenanceDb:
 
         cur.close()
 
-    def get_user_by_email(self, email):
-        cur = self.connection.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
-        rows = cur.fetchall()
-        print(json.dumps(rows,indent=2))
-        return rows
 
     def get_user_by_username(self, username):
         cur = self.connection.cursor (cursor_factory=RealDictCursor)
@@ -70,6 +64,7 @@ class MaintenanceDb:
         else:
             return False
         cur.close()
+
     #requests data methods
 
     def insert_request(self, RequestDao):
@@ -79,18 +74,16 @@ class MaintenanceDb:
         # insert into database
         cur.execute(sql, (RequestDao.user_id,RequestDao.title, RequestDao.description, RequestDao.category))
         self.connection.commit()
-
         cur.close()
 
-    def update_request(self, title, description, request_id):
+    def update_request(self,title, description,category,id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
-        sql = """UPDATE request set title = %s , description = %s  
-                       where request_id = %s"""
-        cur.execute(sql, (title, description, request_id))
+        sql = "UPDATE requests set title = '{0}' , description = '{1}', category = '{2}' where id = {3}".format(title, description, category,id)
+        cur.execute(sql)
         updated_rows = cur.rowcount
-        print(json.dumps(updated_rows, indent=2))
         self.connection.commit()
         cur.close()
+        return updated_rows
 
     def delete_request(self, request_id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
@@ -115,22 +108,13 @@ class MaintenanceDb:
         return rows
         cur.close ()
 
-    def get_request_by_request_id(self, request_id):
+    def get_request_by_request_id(self, id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * from users where request_id = %(request_id)s ", {'request_id': request_id})
-        rows = cur.fetchall()
+        cur.execute("SELECT * from requests where id = %(id)s ", {'id': id})
+        rows = cur.fetchone()
         return rows
         cur.close()
 
-    def get_request_by_author(self, username,password):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute("""SELECT id,username,email,password from users 
-                      where username = %(username)s and password = %(password)s""",
-                     {'username': username,'password': password})
-        rows = cur.fetchall()
-        print(json.dumps(rows,indent=2))
-        return rows
-        cur.close()
 
     def getall_requests(self):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
@@ -138,15 +122,34 @@ class MaintenanceDb:
         rows = cur.fetchall()
         return rows
 
-    def check_user_exist(self, description):
+    def admin_disapprove_request(self, id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * from users where description = %(description)s ", {'email': email})
-        rows = cur.fetchone()
-        if rows:
-            return True
-        else:
-            return False
+        sql = "UPDATE requests set approve = false  where id = {0}".format (id)
+        cur.execute(sql)
+        updated_rows = cur.rowcount
+        print(json.dumps (updated_rows, indent=2))
+        self.connection.commit ()
+        cur.close ()
+        return updated_rows
+    def admin_approve_request(self, id):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        sql = "UPDATE requests set approve = true  where id = {0}".format (id)
+        cur.execute(sql)
+        updated_rows = cur.rowcount
+        print (json.dumps (updated_rows, indent=2))
+        self.connection.commit ()
+        cur.close ()
+        return updated_rows
+
+    def admin_resolve_request(self,id):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        sql = "UPDATE requests set resolve = true  where id = {0}".format(id)
+        cur.execute(sql)
+        updated_rows = cur.rowcount
+        print(json.dumps(updated_rows, indent=2))
+        self.connection.commit()
         cur.close()
+        return updated_rows
 
 # revoked tokens storage
 

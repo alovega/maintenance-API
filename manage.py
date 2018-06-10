@@ -10,12 +10,12 @@ try:
         commands = (
             """
             CREATE TABLE IF NOT EXISTS users(id SERIAL PRIMARY KEY, username VARCHAR NOT NULL UNIQUE, 
-            email VARCHAR(80) NOT NULL UNIQUE, password VARCHAR NOT NULL, is_admin VARCHAR(40) 
+            email VARCHAR(80) NOT NULL UNIQUE, password VARCHAR NOT NULL, is_admin boolean 
             DEFAULT FALSE NOT NULL)""",
             """
             CREATE TABLE IF NOT EXISTS requests(id SERIAL PRIMARY KEY, title VARCHAR(50) NOT NULL,
-            description  VARCHAR(100) NOT NULL, category VARCHAR(40) NOT NULL,approve VARCHAR(40) 
-            DEFAULT FALSE, disapprove VARCHAR(40) DEFAULT FALSE,RESOLVE VARCHAR(40) DEFAULT FALSE, 
+            description  VARCHAR(100) NOT NULL, category VARCHAR(40) NOT NULL,approve BOOLEAN 
+            DEFAULT FALSE,RESOLVE BOOLEAN DEFAULT FALSE, 
             user_id INTEGER  NOT NULL,FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE)
             """,
             """CREATE TABLE IF NOT EXISTS 
