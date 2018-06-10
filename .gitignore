@@ -1,0 +1,13 @@
+venv/
+maintenance/__pycache__
+instance/__pycache__
+test/__pycache__
+.idea
+.idea/
+__pycache__
+/.idea/
+
+
+
+
+files I don't need
