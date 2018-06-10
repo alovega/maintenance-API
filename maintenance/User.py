@@ -89,7 +89,7 @@ class UserLogin(Resource):
         args = reqparse_copy.parse_args()
         user = maintenanceDao.get_user_by_username(args['username'])
         if not user:
-             return{'message': 'User{} doesn\'t exist'.format(args['username'])}
+             return{'message': 'User{} doesn\'t exist'.format(args['username'])},404
         if UserDao.verify_hash(args.password, user[0]['password']):
             access_token = create_access_token (identity=user[0]['username'])
             refresh_token = create_refresh_token (identity=user[0]['username'])
@@ -97,7 +97,7 @@ class UserLogin(Resource):
                 'message': 'Logged in as {}'.format (user[0]['username']),
                 'access_token': access_token,
                 'refresh_token': refresh_token
-            }
+            },202
         else:
             return{
                 'message':'wrong credentials provided'

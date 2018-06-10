@@ -55,6 +55,16 @@ class MaintenanceDb:
         rows = cur.fetchall ()
         return rows
 
+    def update_to_admin(self):
+        cur = self.connection.cursor (cursor_factory=RealDictCursor)
+        sql = "UPDATE requests set is_admin = true  where id = {0}".format (id)
+        cur.execute(sql)
+        updated_rows = cur.rowcount
+        print (json.dumps(updated_rows, indent=2))
+        self.connection.commit()
+        cur.close()
+        return updated_rows
+
     def check_user_exist(self, email):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
         cur.execute("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
@@ -78,6 +88,13 @@ class MaintenanceDb:
 
     def update_request(self,title, description,category,id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        check="select approve  from requests where id = {0}".format(id)
+        cur.execute(check)
+        approved = cur.fetchone()
+        if approved['approve']:
+            cur.close()
+            return -1
+
         sql = "UPDATE requests set title = '{0}' , description = '{1}', category = '{2}' where id = {3}".format(title, description, category,id)
         cur.execute(sql)
         updated_rows = cur.rowcount
@@ -121,6 +138,7 @@ class MaintenanceDb:
         cur.execute("SELECT *  from requests")
         rows = cur.fetchall()
         return rows
+        cur.close()
 
     def admin_disapprove_request(self, id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)

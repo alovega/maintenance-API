@@ -72,6 +72,8 @@ class RequestUserId(Resource):
     def put(self, id):
         args = reqparse_copy.parse_args()
         result = maintenanceDao.update_request(args['title'],args['description'],args['category'],id)
+        if result == -1:
+            return {"message": "unable to edit this request"}, 201
         if result:
             return maintenanceDao.get_request_by_request_id(id)
         else:
