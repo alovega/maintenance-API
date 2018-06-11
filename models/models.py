@@ -75,13 +75,16 @@ class MaintenanceDb:
     #requests data methods
 
     def insert_request(self, RequestDao):
-        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s)"""
+        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s) RETURNING id"""
         # get connection
         cur = self.connection.cursor()
         # insert into database
         cur.execute(sql, (RequestDao.user_id,RequestDao.title, RequestDao.description, RequestDao.category))
         self.connection.commit()
+        result = cur.fetchone()[0]
         cur.close()
+        print(result)
+        return result
 
     def update_request(self,title, description,category,id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
