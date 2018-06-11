@@ -123,14 +123,16 @@ class RequestApprove(Resource):
       # check if user is admin
         if user[0]['is_admin']:
             result = maintenanceDao.admin_approve_request(id)
-        if result:
-            return maintenanceDao.get_request_by_request_id(id)
+
+            if result:
+                return maintenanceDao.get_request_by_request_id(id)
         else:
             return {'message':'request id given not existing'}
 
 
 class RequestDisapprove(Resource):
     @jwt_required
+
     def put(self,id):
         result = maintenanceDao.admin_disapprove_request(id)
         if result:
