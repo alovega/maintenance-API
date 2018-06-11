@@ -83,7 +83,6 @@ class UserRegister(Resource):
         users = maintenanceDao.get_all()
         return users
 
-
 class UserLogin(Resource):
     def post(self):
         args = reqparse_copy.parse_args()
@@ -103,8 +102,14 @@ class UserLogin(Resource):
                 'message':'wrong credentials provided'
             }, 404
 
-    def update_to_admin(self):
-        pass
+    @jwt_required
+    def put(self):
+        args = reqparse_copy.parse_args()
+        user = maintenanceDao.get_user_by_username (args['username'])
+        if not user[0]['is_admin']:
+            return maintenanceDao.update_to_admin (user[0]['id'])
+        else:
+            return {'message': 'user is already admin'}
 
 
 class UserLogoutAccess(Resource):

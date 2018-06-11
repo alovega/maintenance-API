@@ -106,6 +106,7 @@ class RequestAdmin(Resource):
 
 
 class RequestAdminId(Resource):
+    @jwt_required
     def put(self,id):
         result = maintenanceDao.admin_resolve_request(id)
         if result:
@@ -115,6 +116,7 @@ class RequestAdminId(Resource):
 
 
 class RequestApprove(Resource):
+    @jwt_required
     def put(self,id):
         result = maintenanceDao.admin_approve_request(id)
         if result:
@@ -124,6 +126,7 @@ class RequestApprove(Resource):
 
 
 class RequestDisapprove(Resource):
+    @jwt_required
     def put(self,id):
         result = maintenanceDao.admin_disapprove_request(id)
         if result:
