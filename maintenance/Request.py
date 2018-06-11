@@ -1,6 +1,6 @@
 import json
 
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import fields, marshal_with
 from flask_restful import Resource
 from flask_restful import abort
@@ -106,6 +106,7 @@ class RequestAdmin(Resource):
 
 
 class RequestAdminId(Resource):
+    @jwt_required
     def put(self,id):
         result = maintenanceDao.admin_resolve_request(id)
         if result:
@@ -115,15 +116,23 @@ class RequestAdminId(Resource):
 
 
 class RequestApprove(Resource):
+    @jwt_required
     def put(self,id):
-        result = maintenanceDao.admin_approve_request(id)
-        if result:
-            return maintenanceDao.get_request_by_request_id(id)
+        current_user = get_jwt_identity()
+        user = maintenanceDao.get_user_by_username(current_user)
+      # check if user is admin
+        if user[0]['is_admin']:
+            result = maintenanceDao.admin_approve_request(id)
+
+            if result:
+                return maintenanceDao.get_request_by_request_id(id)
         else:
             return {'message':'request id given not existing'}
 
 
 class RequestDisapprove(Resource):
+    @jwt_required
+
     def put(self,id):
         result = maintenanceDao.admin_disapprove_request(id)
         if result:

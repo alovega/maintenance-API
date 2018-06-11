@@ -36,13 +36,11 @@ class MaintenanceDb:
         print(json.dumps(rows, indent=2))
         return rows
         print('rows')
-
         cur.close()
 
-
     def get_user_by_username(self, username):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute("""SELECT id,username,email,password from users 
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""SELECT id,username,email,password,is_admin from users 
                       where username = %(username)s """,
                      {'username': username})
         rows = cur.fetchall()
@@ -55,15 +53,14 @@ class MaintenanceDb:
         rows = cur.fetchall ()
         return rows
 
-    def update_to_admin(self):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        sql = "UPDATE requests set is_admin = true  where id = {0}".format (id)
+    def update_to_admin(self,id):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        sql = "UPDATE users set is_admin = true  where id = {0}".format (id)
         cur.execute(sql)
         updated_rows = cur.rowcount
-        print (json.dumps(updated_rows, indent=2))
         self.connection.commit()
         cur.close()
-        return updated_rows
+        return {"message" :"user is know  Admin"}
 
     def check_user_exist(self, email):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
@@ -78,13 +75,16 @@ class MaintenanceDb:
     #requests data methods
 
     def insert_request(self, RequestDao):
-        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s)"""
+        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s) RETURNING id"""
         # get connection
         cur = self.connection.cursor()
         # insert into database
         cur.execute(sql, (RequestDao.user_id,RequestDao.title, RequestDao.description, RequestDao.category))
         self.connection.commit()
+        result = cur.fetchone()[0]
         cur.close()
+        print(result)
+        return result
 
     def update_request(self,title, description,category,id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
