@@ -1,4 +1,4 @@
-from flask_restful import fields
+from flask_restful import fields, marshal_with
 from flask_restful import Resource
 from flask_restful import reqparse
 from flask_jwt_extended import (create_access_token,create_refresh_token,
@@ -45,6 +45,7 @@ reqparse_copy.add_argument('password', type=str, required=True, help='Invalid pa
 
 
 class UserRegister(Resource):
+
     def post(self):
         args = reqparse.parse_args()
         username = args['username']
@@ -83,6 +84,7 @@ class UserRegister(Resource):
         users = maintenanceDao.get_all()
         return users
 
+
 class UserLogin(Resource):
     def post(self):
         args = reqparse_copy.parse_args()
@@ -113,6 +115,7 @@ class UserLogin(Resource):
 
 
 class UserLogoutAccess(Resource):
+    @marshal_with(user_fields)
     @jwt_required
     def post(self):
         jti = get_raw_jwt()['jti']
@@ -126,6 +129,7 @@ class UserLogoutAccess(Resource):
 
 
 class UserLogoutRefresh(Resource):
+    @marshal_with(user_fields)
     @jwt_refresh_token_required
     def post(self):
         jti = get_raw_jwt()['jti']

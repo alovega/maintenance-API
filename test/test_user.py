@@ -64,5 +64,7 @@ class testUserModel(unittest.TestCase):
         headers= {"Authorization": "Bearer {0}".format(access_token)}
         res2= self.client.post("/auth/logout",headers=headers)
         self.assertEqual(res2.status_code, 200)
+
+
 if __name__ == '__main__':
     unittest.main()

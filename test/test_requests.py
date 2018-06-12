@@ -61,19 +61,6 @@ class Request_tests(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json['message']["category"], "Choose category")
 
-    def test_update_request(self):
-        res1 = {"username": "kevin", "password": "1234"}
-        result = self.client.post ('/auth/login', json=res1)
-        access_token = result.json['access_token']
-        headers = {"Authorization": "Bearer {0}".format (access_token)}
-        request = {"user_id":8,"title": "laptop", "description": "laptop repair screen", "category": "repair"}
-        res = self.client.post('/users/requests', json=request,headers=headers)
-        post_id = res.json['request_id']
-        request = {"title": "Desktop", "description": "Desktop repair screen", "category": "repair"}
-        self.client.put('/users/request/' + str(post_id), json=request,headers=headers)
-        updated = self.client.get('/users/request/' + str(post_id),headers=headers)
-        self.assertEqual(updated.json['request_title'], "Desktop")
-        self.assertEqual(updated.json['request_description'], "Desktop repair screen")
 
     def test_get_all(self):
         res1 = {"username": "kevin", "password": "1234"}
