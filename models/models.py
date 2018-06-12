@@ -44,7 +44,6 @@ class MaintenanceDb:
                       where username = %(username)s """,
                      {'username': username})
         rows = cur.fetchall()
-        print(json.dumps(rows,indent=2))
         return rows
 
     def get_all(self):
@@ -75,16 +74,15 @@ class MaintenanceDb:
     #requests data methods
 
     def insert_request(self, RequestDao):
-        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s) RETURNING id"""
+        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s) Returning *"""
         # get connection
-        cur = self.connection.cursor()
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
         # insert into database
         cur.execute(sql, (RequestDao.user_id,RequestDao.title, RequestDao.description, RequestDao.category))
         self.connection.commit()
-        result = cur.fetchone()[0]
+        result2 = cur.fetchone()
         cur.close()
-        print(result)
-        return result
+        return result2
 
     def update_request(self,title, description,category,id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)

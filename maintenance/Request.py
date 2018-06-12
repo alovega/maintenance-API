@@ -73,7 +73,7 @@ class RequestUserId(Resource):
         args = reqparse_copy.parse_args()
         result = maintenanceDao.update_request(args['title'],args['description'],args['category'],id)
         if result == -1:
-            return {"message": "unable to edit this request"}, 201
+            return {"message": "unable to edit this request"}, 400
         if result:
             return maintenanceDao.get_request_by_request_id(id)
         else:
@@ -82,7 +82,6 @@ class RequestUserId(Resource):
 
 class RequestPosting(Resource):
     @jwt_required
-    @marshal_with (resource_fields)
     def post(self):
         args = reqparse.parse_args()
         request = RequestDao(
@@ -91,8 +90,8 @@ class RequestPosting(Resource):
             description=args['description'],
             category=args['category']
         )
-        maintenanceDao.insert_request(request)
-        return request, 201
+        return maintenanceDao.insert_request(request),201
+
 
 
 class RequestAdmin(Resource):
@@ -106,7 +105,7 @@ class RequestAdmin(Resource):
             if result:
                 return result
         else:
-            return {"message":"not allowed access for current user"}
+            return {"message":"not allowed access for current user"},401
 
 
 class RequestAdminId(Resource):
@@ -119,9 +118,10 @@ class RequestAdminId(Resource):
             result = maintenanceDao.admin_resolve_request(id)
             if result:
                 return maintenanceDao.get_request_by_request_id(id)
+            else:
+                return {'message':'request id given not existing'},400
         else:
-            return {'message':'request id given not existing'}
-
+            return {'message': 'User not Authorized'},401
 
 class RequestApprove(Resource):
     @jwt_required
@@ -134,9 +134,10 @@ class RequestApprove(Resource):
 
             if result:
                 return maintenanceDao.get_request_by_request_id(id)
+            else:
+                return {'message':'request id given not existing'},400
         else:
-            return {'message':'request id given not existing'}
-
+            return {'message': 'User not authorized'},401
 
 class RequestDisapprove(Resource):
     @jwt_required
@@ -150,5 +151,7 @@ class RequestDisapprove(Resource):
             result = maintenanceDao.admin_disapprove_request(id)
             if result:
                 return maintenanceDao.get_request_by_request_id(id)
+            else:
+                return {'message':'request id given not existing'},400
         else:
-            return {'message':'request id given not existing'}
+            return {'message':'user not authorized'},401
