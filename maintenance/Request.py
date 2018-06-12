@@ -98,19 +98,27 @@ class RequestPosting(Resource):
 class RequestAdmin(Resource):
     @jwt_required
     def get(self):
-        result = maintenanceDao.getall_requests()
-        if result:
-            return result
+        current_user = get_jwt_identity ()
+        user = maintenanceDao.get_user_by_username (current_user)
+        # check if user is admin
+        if user[0]['is_admin']:
+            result = maintenanceDao.getall_requests()
+            if result:
+                return result
         else:
-            abort(404)
+            return {"message":"not allowed access for current user"}
 
 
 class RequestAdminId(Resource):
     @jwt_required
     def put(self,id):
-        result = maintenanceDao.admin_resolve_request(id)
-        if result:
-            return maintenanceDao.get_request_by_request_id(id)
+        current_user = get_jwt_identity ()
+        user = maintenanceDao.get_user_by_username (current_user)
+        # check if user is admin
+        if user[0]['is_admin']:
+            result = maintenanceDao.admin_resolve_request(id)
+            if result:
+                return maintenanceDao.get_request_by_request_id(id)
         else:
             return {'message':'request id given not existing'}
 
@@ -134,8 +142,13 @@ class RequestDisapprove(Resource):
     @jwt_required
 
     def put(self,id):
-        result = maintenanceDao.admin_disapprove_request(id)
-        if result:
-            return maintenanceDao.get_request_by_request_id(id)
+        current_user = get_jwt_identity ()
+        user = maintenanceDao.get_user_by_username (current_user)
+        #checkif user is Admin
+
+        if user[0]['is_admin']:
+            result = maintenanceDao.admin_disapprove_request(id)
+            if result:
+                return maintenanceDao.get_request_by_request_id(id)
         else:
             return {'message':'request id given not existing'}
