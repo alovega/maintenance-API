@@ -12,8 +12,8 @@ maintenanceDao = MaintenanceDb()
 
 
 class RequestDao(object):
-    def __init__(self,user_id, title, description,category):
-        self.user_id = user_id
+    def __init__(self,username, title, description,category):
+        self.username = username
         self.title = title
         self.description = description
         self.category = category
@@ -23,19 +23,17 @@ class RequestDao(object):
 
 
 resource_fields = {
-    'user_id':fields.Integer,
+    'username':fields.String,
     'title': fields.String,
     'description': fields.String,
     'category': fields.String
 }
 
 reqparse = reqparse.RequestParser()
-reqparse.add_argument('user_id', type=int, required=True, help='please provide user_id', location='json')
 reqparse.add_argument('title', type=str, required=True, help='No request title provided', location='json')
 reqparse.add_argument('description', type=str, required=True, help='No request description provided', location='json')
 reqparse.add_argument('category', type=str, required=True, help='Choose category', location='json')
 reqparse_copy = reqparse.copy()
-reqparse_copy.remove_argument('user_id')
 reqparse_copy.add_argument('title', type=str, required=False, location='json')
 reqparse_copy.add_argument('description', type=str, required=False, location='json')
 reqparse_copy.add_argument('category', type=str, required=False, help='choose category', location='json')
@@ -47,21 +45,21 @@ class HelloWorld(Resource):
 
 
 class RequestUser(Resource):
-    @marshal_with(resource_fields)
     @jwt_required
-    def get(self, user_id):
-        result = maintenanceDao.get_request_by_user_id(user_id)
+    def get(self):
+        current_user = get_jwt_identity()
+        result = maintenanceDao.get_request_by_username(current_user)
         if result:
             return result
         else:
             return {"message": "not a registered user"}, 404
 
 
-class RequestUserId(Resource):
-    @marshal_with (resource_fields)
+class RequestId(Resource):
     @jwt_required
     def get(self, id):
-        result = maintenanceDao.get_request_by_request_id(id)
+        current_user = get_jwt_identity()
+        result = maintenanceDao.get_request_by_request_id_and_username(current_user, id)
         if result:
             return result
         else:
@@ -83,15 +81,15 @@ class RequestUserId(Resource):
 class RequestPosting(Resource):
     @jwt_required
     def post(self):
+        current_user = get_jwt_identity()
         args = reqparse.parse_args()
         request = RequestDao(
-            user_id=args['user_id'],
+            username=current_user,
             title=args['title'],
             description=args['description'],
             category=args['category']
         )
         return maintenanceDao.insert_request(request),201
-
 
 
 class RequestAdmin(Resource):
@@ -123,12 +121,13 @@ class RequestAdminId(Resource):
         else:
             return {'message': 'User not Authorized'},401
 
+
 class RequestApprove(Resource):
     @jwt_required
     def put(self,id):
         current_user = get_jwt_identity()
         user = maintenanceDao.get_user_by_username(current_user)
-      # check if user is admin
+        # check if user is admin
         if user[0]['is_admin']:
             result = maintenanceDao.admin_approve_request(id)
 

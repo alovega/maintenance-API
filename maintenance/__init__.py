@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from maintenance.Request import HelloWorld, RequestUser, RequestPosting, RequestDisapprove, RequestApprove
-from  maintenance.Request import RequestUserId
+from  maintenance.Request import RequestId
 from maintenance.User import UserRegister
 from maintenance.User import UserLogin
 from flask_jwt_extended import JWTManager
@@ -26,11 +26,11 @@ def check_if_token_in_blacklist(decrypted_token):
 
 """my api resources """
 api.add_resource(HelloWorld,'/')
-api.add_resource(RequestUser, '/users/requests/<int:user_id>', endpoint='requestapi')
+api.add_resource(RequestUser, '/users/requests', endpoint='requestapi')
 api.add_resource(RequestPosting, '/users/requests', endpoint='requestservice')
 api.add_resource(UserRegister, '/auth/signup', endpoint='userregister')
 api.add_resource(UserLogin, '/auth/login', endpoint='userlogin')
-api.add_resource(RequestUserId,'/users/request/<id>', endpoint='requestuserid')
+api.add_resource(RequestId,'/users/requests/<int:id>', endpoint='requestuserid')
 api.add_resource(UserLogoutRefresh,'/auth/logout/refresh',endpoint='userlogoutrefresh')
 api.add_resource(UserLogoutAccess,'/auth/logout', endpoint='userlogout access')
 api.add_resource(TokenRefresh,'/token/refresh', endpoint='tokenrefresh')

@@ -61,7 +61,7 @@ class MaintenanceDb:
         cur.close()
         return {"message" :"user is know  Admin"}
 
-    def check_user_exist(self, email):
+    def check_user_exist_by_email(self, email):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
         cur.execute("SELECT id,username,email,password from users where email = %(email)s ", {'email': email})
         rows = cur.fetchone()
@@ -71,14 +71,25 @@ class MaintenanceDb:
             return False
         cur.close()
 
+    def check_user_exist_by_username(self, username):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT id, username, email, password from users where username = %(username)s", {'username':
+                                                                                                          username})
+        rows = cur.fetchone()
+        if rows:
+            return True
+        else:
+            return  False
+        cur.close()
+
     #requests data methods
 
     def insert_request(self, RequestDao):
-        sql = """INSERT INTO requests(user_id,title,description,category) VALUES (%s,%s,%s,%s) Returning *"""
+        sql = """INSERT INTO requests(username,title,description,category) VALUES (%s,%s,%s,%s) Returning *"""
         # get connection
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
         # insert into database
-        cur.execute(sql, (RequestDao.user_id,RequestDao.title, RequestDao.description, RequestDao.category))
+        cur.execute(sql, (RequestDao.username,RequestDao.title, RequestDao.description, RequestDao.category))
         self.connection.commit()
         result2 = cur.fetchone()
         cur.close()
@@ -116,16 +127,16 @@ class MaintenanceDb:
         print('rows')
         cur.close()
 
-    def get_request_by_user_id(self, user_id):
-        cur = self.connection.cursor (cursor_factory=RealDictCursor)
-        cur.execute("SELECT * from requests where user_id = %(user_id)s ", {'user_id': user_id})
+    def get_request_by_username(self, username):
+        cur = self.connection.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * from requests where username = %(username)s ", {'username': username})
         rows = cur.fetchall()
         return rows
         cur.close ()
 
-    def get_request_by_request_id(self, id):
+    def get_request_by_request_id_and_username(self, username, id):
         cur = self.connection.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * from requests where id = %(id)s ", {'id': id})
+        cur.execute("SELECT * from requests where id = %s and username = %s ",(id, username))
         rows = cur.fetchone()
         return rows
         cur.close()

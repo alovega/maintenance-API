@@ -16,7 +16,7 @@ try:
             CREATE TABLE IF NOT EXISTS requests(id SERIAL PRIMARY KEY, title VARCHAR(50) NOT NULL,
             description  VARCHAR(100) NOT NULL, category VARCHAR(40) NOT NULL,approve BOOLEAN 
             DEFAULT FALSE,RESOLVE BOOLEAN DEFAULT FALSE, 
-            user_id INTEGER  NOT NULL,FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE)
+            username VARCHAR  NOT NULL,FOREIGN KEY (username) REFERENCES users (username) ON DELETE CASCADE)
             """,
             """CREATE TABLE IF NOT EXISTS 
              revoked_tokens(id SERIAL PRIMARY KEY, jti VARCHAR(256) )""")
@@ -30,7 +30,6 @@ try:
 except:
 
     print("I am unable to connect to the database")
-
 
 
 if __name__ == '__main__':

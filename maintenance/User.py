@@ -59,8 +59,10 @@ class UserRegister(Resource):
             password=args['password']
 
         )
-        if maintenanceDao.check_user_exist(user.email):
+        if maintenanceDao.check_user_exist_by_email(user.email):
             return {"message": "Email already used"}, 202
+        elif maintenanceDao.check_user_exist_by_username(user.username):
+            return {"message": "username already used pick another one"}, 202
 
         user.password = user.generate_hash(user.password)
 
