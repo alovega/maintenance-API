@@ -1,7 +1,10 @@
 import json
 import unittest
-from maintenance import app
+
 import psycopg2
+from flask_restful import Api
+
+from maintenance import create_app, HelloWorld, RequestUser, UserRegister
 
 
 class Request_tests(unittest.TestCase):
@@ -10,7 +13,7 @@ class Request_tests(unittest.TestCase):
             self.connection = psycopg2.connect (host='localhost', dbname='test_db', user='postgres', password='LUG4Z1V4', port=5433)
         except:
             print("Unable to connect to the database")
-
+        app = create_app("testing")
         app.config["Testing"] = True
         self.client = app.test_client()
 
