@@ -1,12 +1,21 @@
 import json
 import unittest
-from maintenance import app
+
+import psycopg2
+from flask_restful import Api
+
+from maintenance import create_app, HelloWorld, RequestUser, UserRegister
+
 
 class Request_tests(unittest.TestCase):
     def setUp(self):
+        try:
+            self.connection = psycopg2.connect (host='localhost', dbname='test_db', user='postgres', password='LUG4Z1V4', port=5433)
+        except:
+            print("Unable to connect to the database")
+        app = create_app("testing")
         app.config["Testing"] = True
         self.client = app.test_client()
-
 
     def test_hello_world(self):
         response = self.client.get('/')
@@ -14,43 +23,54 @@ class Request_tests(unittest.TestCase):
         self.assertEqual(response.status_code,200)
 
     def test_create_request_works(self):
-        request = {"title": "laptop", "description": "laptop screen Repair",
+        res1 = {"username": "kevin", "password": "1234"}
+        result = self.client.post ('/auth/login', json=res1)
+        access_token = result.json['access_token']
+        headers = {"Authorization": "Bearer {0}".format(access_token)}
+        request = {"user_id":8,"title": "laptop", "description": "laptop screen Repair",
                    "category": "maintenance"}
-        res = self.client.post('/api/v1/request', json=request)
+        res = self.client.post('/users/requests', json=request, headers=headers)
         self.assertEqual(res.status_code, 201)
 
     def test_create_request_with_no_title(self):
-        request = {"description": "laptop screen Repair",
+        res1 = {"username": "kevin", "password": "1234"}
+        result = self.client.post ('/auth/login', json=res1)
+        access_token = result.json['access_token']
+        headers = {"Authorization": "Bearer {0}".format (access_token)}
+        request = {"user_id":8, "description": "laptop screen Repair",
                    "category": "maintenance"}
-        res = self.client.post('/api/v1/request', json=request)
+        res = self.client.post('/users/requests', json=request,headers=headers)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json['message']['title'], "No request title provided")
 
     def test_create_request_with_no_description(self):
-        request = {"title": "laptop",
+        res1 = {"username": "kevin", "password": "1234"}
+        result = self.client.post ('/auth/login', json=res1)
+        access_token = result.json['access_token']
+        headers = {"Authorization": "Bearer {0}".format (access_token)}
+        request = {"user_id":8,"title": "laptop",
                    "category": "maintenance"}
-        res = self.client.post('/api/v1/request', json=request)
+        res = self.client.post('/users/requests', json=request,headers=headers)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json['message']['description'], "No request description provided")
 
     def test_create_request_with_no_category(self):
-        request = {"title": "laptop", "description": "laptop screen Repair"}
-        res = self.client.post('/api/v1/request', json=request)
+        res1 = {"username": "kevin", "password": "1234"}
+        result = self.client.post ('/auth/login', json=res1)
+        access_token = result.json['access_token']
+        headers = {"Authorization": "Bearer {0}".format (access_token)}
+        request = {"user_id":8,"title": "laptop", "description": "laptop screen Repair"}
+        res = self.client.post('/users/requests', json=request,headers=headers)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json['message']["category"], "Choose category")
 
-    def test_update_request(self):
-        request = {"title": "laptop", "description": "laptop repair screen", "category": "repair"}
-        res = self.client.post('/api/v1/request', json=request)
-        post_id = res.json['request_id']
-        request = {"title": "Desktop", "description": "Desktop repair screen", "category": "repair"}
-        self.client.put('/api/v1/request/' + str(post_id), json=request)
-        updated = self.client.get('/api/v1/request/' + str(post_id))
-        self.assertEqual(updated.json['request_title'], "Desktop")
-        self.assertEqual(updated.json['request_description'], "Desktop repair screen")
 
     def test_get_all(self):
-        request = self.client.get('/api/v1/request')
+        res1 = {"username": "kevin", "password": "1234"}
+        result = self.client.post ('/auth/login', json=res1)
+        access_token = result.json['access_token']
+        headers = {"Authorization": "Bearer {0}".format (access_token)}
+        request = self.client.get('/requests/',headers=headers)
         self.assertEqual(request.status_code, 200)
 
 
